@@ -25,28 +25,28 @@ import prelude
 
 type
   # distinct objects always feel very different from just copying objects
-  PcgRand[T: SomeUnsignedInt, S: PcgStateVariant, G: PcgGeneratorVariant] = object
+  PcgRand*[T: SomeUnsignedInt, S: PcgStateVariant, G: PcgGeneratorVariant] = object
     state: T
     when S is SetSeq:
       incr: uint64
 
   # state variants
-  OneSeq = distinct void
-  Mcg = distinct void
-  Unique = distinct void
-  SetSeq = distinct void
-  PcgStateVariant = OneSeq or Mcg or Unique or SetSeq
+  OneSeq* = distinct void
+  Mcg* = distinct void
+  Unique* = distinct void
+  SetSeq* = distinct void
+  PcgStateVariant* = OneSeq or Mcg or Unique or SetSeq
 
   # generator variants
-  XshRs = distinct void
-  XshRr = distinct void
-  RxsMXs = distinct void
-  RxsM = distinct void
-  XslRr = distinct void
-  XslRrRr = distinct void
-  PcgGeneratorVariant = XshRs or XshRr or RxsMXs or RxsM or XslRr or XslRrRr
-  PcgSmallerReturnGenerator = XshRs or XshRr or RxsM or XslRr
-  PcgEqualReturnGenerator = RxsMXs or XslRrRr
+  XshRs* = distinct void
+  XshRr* = distinct void
+  RxsMXs* = distinct void
+  RxsM* = distinct void
+  XslRr* = distinct void
+  XslRrRr* = distinct void
+  PcgGeneratorVariant* = XshRs or XshRr or RxsMXs or RxsM or XslRr or XslRrRr
+  PcgSmallerReturnGenerator* = XshRs or XshRr or RxsM or XslRr
+  PcgEqualReturnGenerator* = RxsMXs or XslRrRr
 
 # --- output
 # xsh rs
@@ -141,28 +141,28 @@ proc advanceLcg[T: SomeUnsignedInt](state, delta, curMult, curPlus: T): T =
 
 # --- lcg advance/step
 
-proc step[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, OneSeq, G]) =
+proc step*[T: SomeUnsignedInt](r: var PcgRand[T, OneSeq, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T) + defaultIncrement(T)
 
-proc advance[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, OneSeq, G], delta: T) =
-  r.state = advanceLcg(r.state, delta, defaultMultiplier(T), defaultIncrement(T))
+proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, OneSeq, PcgGeneratorVariant], delta: T) =
+  r.state = advance*Lcg(r.state, delta, defaultMultiplier(T), defaultIncrement(T))
 
-proc step[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, Mcg, G]) =
+proc step*[T: SomeUnsignedInt](r: var PcgRand[T, Mcg, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T)
 
-proc advance[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, Mcg, G], delta: T) =
-  r.state = advanceLcg(r.state, delta, defaultMultiplier(T), 0)
+proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, Mcg, PcgGeneratorVariant], delta: T) =
+  r.state = advance*Lcg(r.state, delta, defaultMultiplier(T), 0)
 
-proc step[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, Unique, G]) =
+proc step*[T: SomeUnsignedInt](r: var PcgRand[T, Unique, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T) + (r.state or 1)
 
-proc advance[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, Unique, G], delta: T) =
-  r.state = advanceLcg(r.state, delta, defaultMultiplier(T), (r.state or 1))
+proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, Unique, PcgGeneratorVariant], delta: T) =
+  r.state = advance*Lcg(r.state, delta, defaultMultiplier(T), (r.state or 1))
 
-proc step[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, SetSeq, G]) =
+proc step*[T: SomeUnsignedInt](r: var PcgRand[T, SetSeq, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T) + r.incr
 
-proc advance[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, SetSeq, G], delta: T) =
+proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, SetSeq, PcgGeneratorVariant], delta: T) =
   r.state = advanceLcg(r.state, delta, defaultMultiplier(T), r.incr)
 
 # --- init/seed
