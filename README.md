@@ -25,15 +25,30 @@ block:
 
 # xoshiro128 and xoroshiro256
 block:
-  var r = initXoshiro128(123123123, Plus) # or PlusPlus, or StarStar
+  var r = initXoshiro128(Plus, 123123123) # or PlusPlus, or StarStar
 
 # pcg
 block:
-  var r = initPcgRand[uint32, Mcg, XshRr](213123)
-  #       return type ^~~~~~
-  #             state variant ^~~
-  #              generator variant ^~~~~
+  var r = initPcgRand(Mcg, XshRr, 123123123)
+  #     state variant ^~~
+  #      generator variant ^~~~~
+  #                          seed ^~~~~~~~~
+  # (careful, return type is dependent on seed type)
+  #[
+    State Variants:
+      OneSeq
+      Mcg
+      Unique
+      SetSeq
+    Generator Variants:
+      XshRs
+      XshRr
+      RxsMXs
+      RxsM
+      XslRr
+      XslRrRr
+  ]#
 ```
 
 ## To-do
-- standardise init procs to pcg-style instead of xo[ro]shiro-style
+- make pcg return types easier to deal with

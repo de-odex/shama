@@ -28,7 +28,7 @@ proc next*(r: var Xoshiro256[StarStar]): uint64 =
 
 pkgRandomProcGen(Xoshiro256[XorshiftLikeGeneratorVariant], uint64)
 
-proc initXoshiro256*(seed: int64, G: typedesc[XorshiftLikeGeneratorVariant]): Xoshiro256[G] =
+proc initXoshiro256*(G: typedesc[XorshiftLikeGeneratorVariant], seed: int64): Xoshiro256[G] =
   var sm64 = initSplitMix64(seed)
   result.a0 = sm64.next()
   result.a1 = sm64.next()

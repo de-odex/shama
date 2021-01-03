@@ -167,7 +167,7 @@ proc advance[T: SomeUnsignedInt, G: PcgGeneratorVariant](r: var PcgRand[T, SetSe
 
 # --- init/seed
 
-proc initPcgRand*[T: SomeUnsignedInt, S: PcgStateVariant, G: PcgGeneratorVariant](initstate: T): PcgRand[T, S, G] =
+proc initPcgRand*[T: SomeUnsignedInt](S: typedesc[OneSeq or Mcg or Unique], G: typedesc[PcgGeneratorVariant], initstate: T): PcgRand[T, S, G] =
   when S == OneSeq:
     result.state = 0
     step(result)
@@ -180,12 +180,14 @@ proc initPcgRand*[T: SomeUnsignedInt, S: PcgStateVariant, G: PcgGeneratorVariant
     step(result)
     result.state += initstate
     step(result)
-  else S == SetSeq:
-    result.state = 0
-    result.incr = (initseq shl 1) or 1
-    step(result)
-    result.state += initstate
-    step(result)
+
+
+proc initPcgRand*[T: SomeUnsignedInt](S: typedesc[SetSeq], G: typedesc[PcgGeneratorVariant], initstate, initseq: T): PcgRand[T, S, G] =
+	result.state = 0
+	result.incr = (initseq shl 1) or 1
+	step(result)
+	result.state += initstate
+	step(result)
 
 # --- generators
 
