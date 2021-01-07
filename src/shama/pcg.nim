@@ -104,25 +104,25 @@ outputXslRrRr(uint64, 59, 32)
 
 # -- lcg multi advance/step
 
-template defaultMultiplier(t: typedesc): t =
-  when t == uint8:
-    141
-  elif t == uint16:
-    12829
-  elif t == uint32:
-    747796405
-  elif t == uint64:
-    6364136223846793005
+template defaultMultiplier(t: typedesc): untyped =
+  when t is uint8:
+    141'u8
+  elif t is uint16:
+    12829'u16
+  elif t is uint32:
+    747796405'u32
+  elif t is uint64:
+    6364136223846793005'u64
 
-template defaultIncrement(t: typedesc): t =
-  when t == uint8:
-    77
-  elif t == uint16:
-    47989
-  elif t == uint32:
-    2891336453
-  elif t == uint64:
-    1442695040888963407
+template defaultIncrement(t: typedesc): untyped =
+  when t is uint8:
+    77'u8
+  elif t is uint16:
+    47989'u16
+  elif t is uint32:
+    2891336453'u32
+  elif t is uint64:
+    1442695040888963407'u64
 
 proc advanceLcg[T: SomeUnsignedInt](state, delta, curMult, curPlus: T): T =
   var
@@ -145,19 +145,19 @@ proc step*[T: SomeUnsignedInt](r: var PcgRand[T, OneSeq, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T) + defaultIncrement(T)
 
 proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, OneSeq, PcgGeneratorVariant], delta: T) =
-  r.state = advance*Lcg(r.state, delta, defaultMultiplier(T), defaultIncrement(T))
+  r.state = advanceLcg(r.state, delta, defaultMultiplier(T), defaultIncrement(T))
 
 proc step*[T: SomeUnsignedInt](r: var PcgRand[T, Mcg, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T)
 
 proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, Mcg, PcgGeneratorVariant], delta: T) =
-  r.state = advance*Lcg(r.state, delta, defaultMultiplier(T), 0)
+  r.state = advanceLcg(r.state, delta, defaultMultiplier(T), 0)
 
 proc step*[T: SomeUnsignedInt](r: var PcgRand[T, Unique, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T) + (r.state or 1)
 
 proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, Unique, PcgGeneratorVariant], delta: T) =
-  r.state = advance*Lcg(r.state, delta, defaultMultiplier(T), (r.state or 1))
+  r.state = advanceLcg(r.state, delta, defaultMultiplier(T), (r.state or 1))
 
 proc step*[T: SomeUnsignedInt](r: var PcgRand[T, SetSeq, PcgGeneratorVariant]) =
   r.state = r.state * defaultMultiplier(T) + r.incr
@@ -168,14 +168,14 @@ proc advance*[T: SomeUnsignedInt](r: var PcgRand[T, SetSeq, PcgGeneratorVariant]
 # --- init/seed
 
 proc initPcgRand*[T: SomeUnsignedInt](S: typedesc[OneSeq or Mcg or Unique], G: typedesc[PcgGeneratorVariant], initstate: T): PcgRand[T, S, G] =
-  when S == OneSeq:
+  when S is OneSeq:
     result.state = 0
     step(result)
     result.state += initstate
     step(result)
-  else S == Mcg:
+  elif S is Mcg:
     result.state = initstate or 1
-  else S == Unique:
+  elif S is Unique:
     result.state = 0
     step(result)
     result.state += initstate
@@ -183,16 +183,16 @@ proc initPcgRand*[T: SomeUnsignedInt](S: typedesc[OneSeq or Mcg or Unique], G: t
 
 
 proc initPcgRand*[T: SomeUnsignedInt](S: typedesc[SetSeq], G: typedesc[PcgGeneratorVariant], initstate, initseq: T): PcgRand[T, S, G] =
-	result.state = 0
-	result.incr = (initseq shl 1) or 1
-	step(result)
-	result.state += initstate
-	step(result)
+  result.state = 0
+  result.incr = (initseq shl 1) or 1
+  step(result)
+  result.state += initstate
+  step(result)
 
 # --- generators
 
 proc next*(r: var PcgRand[SomeUnsignedInt, PcgStateVariant, PcgGeneratorVariant]): auto =
-  result = r.state.output()
+  result = r.output()
   step(r)
 
 pkgRandomProcGen(PcgRand[uint64, PcgStateVariant, PcgEqualReturnGenerator], uint64)
